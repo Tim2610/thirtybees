@@ -84,15 +84,16 @@ class EmployeeCore extends ObjectModel
     /** @var bool Optin status */
     public $optin = 1;
 
-    /* employee notifications */
     public $remote_addr;
-    public $id_last_order;
-    public $id_last_customer_message;
-    public $id_last_customer;
     protected $associated_shops = [];
 
     public $last_connection_date;
     // @codingStandardsIgnoreEnd
+
+
+    /** @var Notification */
+    protected $notification;
+
 
     /**
      * @see ObjectModel::$definition
@@ -122,9 +123,6 @@ class EmployeeCore extends ObjectModel
             'bo_menu'                  => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'dbType' => 'tinyint(1)', 'dbDefault' => '1'],
             'active'                   => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'dbDefault' => '0'],
             'optin'                    => ['type' => self::TYPE_BOOL, 'validate' => 'isBool', 'dbDefault' => '1'],
-            'id_last_order'            => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'dbDefault' => '0'],
-            'id_last_customer_message' => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'dbDefault' => '0'],
-            'id_last_customer'         => ['type' => self::TYPE_INT, 'validate' => 'isUnsignedInt', 'dbDefault' => '0'],
             'last_connection_date'     => ['type' => self::TYPE_DATE, 'validate' => 'isDate', 'dbDefault' => '1970-01-01', 'dbNullable' => true, 'dbType' => 'date'],
         ],
         'keys' => [
@@ -160,6 +158,7 @@ class EmployeeCore extends ObjectModel
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws Adapter_Exception
      * @since   1.0.0
      * @version 1.0.0 Initial version
      */
@@ -373,6 +372,21 @@ class EmployeeCore extends ObjectModel
         }
 
         return $success;
+    }
+
+    /**
+     * Deletes this employee
+     *
+     * @return bool
+     * @throws PrestaShopException
+     */
+    public function delete()
+    {
+        $id = (int)$this->id;
+        if ($id) {
+            Db::getInstance()->delete('employee_notification', 'id_employee = ' . $id);
+        }
+        return parent::delete();
     }
 
     /**
@@ -741,7 +755,7 @@ class EmployeeCore extends ObjectModel
     }
 
     /**
-     * @param string $element
+     * @param string $type
      *
      * @return int
      *
@@ -749,20 +763,24 @@ class EmployeeCore extends ObjectModel
      * @version 1.0.0 Initial version
      * @throws PrestaShopException
      */
-    public function getLastElementsForNotify($element)
+    public function getLastElementsForNotify($type)
     {
-        $element = bqSQL($element);
-        $max = Db::getInstance(_PS_USE_SQL_SLAVE_)->getValue(
-            (new DbQuery())
-                ->select('MAX(`id_'.bqSQL($element).'`) as `id_'.bqSQL($element).'`')
-                ->from(bqSQL($element).($element == 'order' ? 's' : ''))
-        );
-
-        // if no rows in table, set max to 0
-        if ((int) $max < 1) {
-            $max = 0;
-        }
-
-        return (int) $max;
+        return $this->getNotification()->getLastSeenId($type);
     }
+
+    /**
+     * Returns Notification object associated with this employee
+     *
+     * @return Notification
+     * @throws PrestaShopException
+     */
+    public function getNotification()
+    {
+        if (is_null($this->notification)) {
+            $this->notification = new Notification($this);
+
+        }
+        return $this->notification;
+    }
+
 }
