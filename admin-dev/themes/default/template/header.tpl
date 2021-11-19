@@ -65,12 +65,14 @@
 		var see_order_msg = '{l s='View this order' js=1}';
 		var new_customer_msg = '{l s='A new customer registered on your shop.' js=1}';
 		var customer_name_msg = '{l s='Customer name:' js=1} ';
+		var new_system_notification = '{l s='There is a new system notification.' js=1}';
 		var new_msg = '{l s='A new message was posted on your shop.' js=1}';
 		var see_msg = '{l s='Read this message' js=1}';
 		var token = '{$token|addslashes}';
 		var token_admin_orders = '{getAdminToken tab='AdminOrders'}';
 		var token_admin_customers = '{getAdminToken tab='AdminCustomers'}';
 		var token_admin_customer_threads = '{getAdminToken tab='AdminCustomerThreads'}';
+		var token_admin_system_notification = '{getAdminToken tab='AdminSystemNotification'}';
 		var currentIndex = '{$currentIndex|@addcslashes:'\''}';
 		var employee_token = '{getAdminToken tab='AdminEmployees'}';
 		var choose_language_translate = '{l s='Choose language' js=1}';
@@ -210,6 +212,32 @@
 						</div>
 					</li>
 {/if}
+{if {$show_new_system_notifications} == 1}
+					<li id="system_notif" class="dropdown" data-type="system_notification">
+						<a href="javascript:void(0);" class="dropdown-toggle notifs" data-toggle="dropdown">
+							<i class="icon-envelope"></i>
+							<span id="system_notif_number_wrapper" class="notifs_badge hide">
+								<span id="system_notif_value" >0</span>
+							</span>
+						</a>
+						<div class="dropdown-menu notifs_dropdown">
+							<section id="system_notif_wrapper" class="notifs_panel">
+								<div class="notifs_panel_header">
+									<h3>{l s='Latest System Notifications'}</h3>
+								</div>
+								<div id="list_system_notif" class="list_notif">
+									<span class="no_notifs">
+										{l s='No new system notifications have been posted on your shop.'}
+									</span>
+								</div>
+								<div class="notifs_panel_footer">
+									<a href="index.php?controller=AdminSystemNotification&amp;token={getAdminToken tab='AdminSystemNotification'}">{l s='Show all Notifications'}</a>
+								</div>
+							</section>
+						</div>
+					</li>
+{/if}
+
 				</ul>
 {if count($quick_access) >= 0}
 				<ul id="header_quick">
@@ -331,6 +359,9 @@
 							<li class="text-center text-nowrap">{$employee->firstname} {$employee->lastname}</li>
 							<li class="divider"></li>
 							<li><a href="{$link->getAdminLink('AdminEmployees')|escape:'html':'UTF-8'}&amp;id_employee={$employee->id|intval}&amp;updateemployee"><i class="icon-wrench"></i> {l s='My preferences'}</a></li>
+							{if $host_mode}
+							<li><a href="https://www.thirtybees.com/cloud/" class="_blank"><i class="icon-wrench"></i> {l s='My thirty bees account'}</a></li>
+							{/if}
 							<li class="divider"></li>
 							<li><a id="header_logout" href="{$login_link|escape:'html':'UTF-8'}&amp;logout"><i class="icon-signout"></i> {l s='Sign out'}</a></li>
 						</ul>
