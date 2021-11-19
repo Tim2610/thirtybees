@@ -602,6 +602,8 @@ class AdminEmployeesControllerCore extends AdminController
             $_POST['id_last_order'] = $employee->getLastElementsForNotify('order');
             $_POST['id_last_customer_message'] = $employee->getLastElementsForNotify('customer_message');
             $_POST['id_last_customer'] = $employee->getLastElementsForNotify('customer');
+            $_POST['id_last_system_notification'] = $employee->getLastElementsForNotify('system_notification');
+
         }
 
         //if profile is super admin, manually fill checkBoxShopAsso_employee because in the form they are disabled.
