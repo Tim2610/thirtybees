@@ -612,7 +612,6 @@ class AdminControllerCore extends Controller
                 }
             }
         } catch (PrestaShopException $e) {
-            $e->logError();
             $this->errors[] = $e->getMessage();
         };
 
@@ -838,7 +837,7 @@ class AdminControllerCore extends Controller
     protected function loadObject($opt = false)
     {
         if (!isset($this->className) || empty($this->className)) {
-            return false;
+            return true;
         }
 
         $id = (int) Tools::getValue($this->identifier);
@@ -953,7 +952,8 @@ class AdminControllerCore extends Controller
      * @param int|null    $limit    Row count in LIMIT clause
      * @param int|bool    $idLangShop
      *
-     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseExceptionCore
+     * @throws \PrestaShopExceptionCore
      *
      * @since   1.0.0
      * @version 1.0.0 Initial version
@@ -2320,6 +2320,7 @@ class AdminControllerCore extends Controller
                     'show_new_orders'           => Configuration::get('PS_SHOW_NEW_ORDERS') && isset($accesses['AdminOrders']) && $accesses['AdminOrders']['view'],
                     'show_new_customers'        => Configuration::get('PS_SHOW_NEW_CUSTOMERS') && isset($accesses['AdminCustomers']) && $accesses['AdminCustomers']['view'],
                     'show_new_messages'         => Configuration::get('PS_SHOW_NEW_MESSAGES') && isset($accesses['AdminCustomerThreads']) && $accesses['AdminCustomerThreads']['view'],
+                    'show_new_system_notifications'         => Configuration::get('PS_SHOW_NEW_SYSTEM_NOTIFICATIONS') && isset($accesses['AdminSystemNotification']) && $accesses['AdminSystemNotification']['view'],
                     'employee'                  => $this->context->employee,
                     'search_type'               => Tools::getValue('bo_search_type'),
                     'bo_query'                  => Tools::safeOutput(Tools::getValue('bo_query')),
@@ -3123,9 +3124,10 @@ class AdminControllerCore extends Controller
      *
      * @return string|false
      * @throws PrestaShopException
-     * @throws SmartyException
+     *
      * @since   1.0.0
      * @version 1.0.0 Initial version
+     * @throws PrestaShopExceptionCore
      */
     public function renderList()
     {
@@ -3826,6 +3828,7 @@ class AdminControllerCore extends Controller
         $this->addjQueryPlugin('growl', null, false);
         $this->addJqueryUI(['ui.slider', 'ui.datepicker']);
 
+        Media::addJsDef(['host_mode' => false]);
         Media::addJsDef(['currencyFormatters' => Currency::getJavascriptFormatters()]);
 
         $this->addJS(
@@ -3930,6 +3933,7 @@ class AdminControllerCore extends Controller
                 'table'            => $this->table,
                 'current'          => static::$currentIndex,
                 'token'            => $this->token,
+                'host_mode'        => 0,
                 'stock_management' => (int) Configuration::get('PS_STOCK_MANAGEMENT'),
             ]
         );
