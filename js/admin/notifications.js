@@ -128,6 +128,21 @@ function getPush(refresh) {
         } else {
           $("#customer_messages_notif_number_wrapper").addClass('hide');
         }
+        // Add system notifications to the list
+        html = "";
+        $.each(json.system_notification.results, function (property, value) {
+          html += "<a href='index.php?tab=AdminSystemNotification&token=" + token_admin_system_notification + "&viewsystem_notification&id_system_notification=" + parseInt(value.id_system_notification) + "'>";
+          html += "<p>" + new_system_notification + "&nbsp;<strong>" + value.short_desc + "</strong></p>";
+          html += "<small class='text-muted'><i class='icon-time'></i> " + moment(value.update_date).fromNow() + " </small>";
+          html += "</a>";
+        });
+        if (parseInt(json.system_notification.total) > 0) {
+          $("#list_system_notif").empty().append(html);
+          $("#system_notif_value").text(json.system_notification.total);
+          $("#system_notif_number_wrapper").removeClass('hide');
+        } else {
+          $("#system_notif_number_wrapper").addClass('hide');
+        }
       }
       if (refresh) {
         setTimeout("getPush(1)", 120000);
