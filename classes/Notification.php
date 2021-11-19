@@ -46,7 +46,7 @@ class NotificationCore
      */
     public function __construct()
     {
-        $this->types = ['order', 'customer_message', 'customer'];
+        $this->types = ['order', 'customer_message', 'customer', 'system_notification'];
     }
 
     /**
@@ -65,7 +65,7 @@ class NotificationCore
         $notifications = [];
         $employeeInfos = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow(
             (new DbQuery())
-                ->select('`id_last_order`, `id_last_customer_message`, `id_last_customer`')
+                ->select('`id_last_order`, `id_last_customer_message`, `id_last_customer`, `id_last_system_notification`')
                 ->from('employee')
                 ->where('`id_employee` = '.(int) Context::getContext()->cookie->id_employee)
         );
@@ -116,6 +116,15 @@ class NotificationCore
                     ->orderBy('c.`id_customer_message` DESC')
                     ->limit(5);
                 break;
+            case 'system_notification':
+                $sql = (new DbQuery())
+                    ->select('SQL_CALC_FOUND_ROWS `id_system_notification`')
+                    ->select('`date_add`, `date_upd`, `short_desc`')
+                    ->from('system_notification')
+                    ->where('`id_system_notification` > ' .(int) $idLastElement)
+                    ->orderBy('`id_system_notification` DESC')
+                    ->limit(5);
+                break;
             default:
                 $sql = (new DbQuery())
                     ->select('SQL_CALC_FOUND_ROWS t.`id_'.bqSQL($type).'`, t.*')
@@ -136,6 +145,8 @@ class NotificationCore
                 $customerName = Tools::safeOutput($value['firstname'].' '.$value['lastname']);
             } elseif (isset($value['email'])) {
                 $customerName = Tools::safeOutput($value['email']);
+            } elseif (isset($value['short_desc'])){
+                $notif_short_desc = Tools::safeOutput($value['short_desc']);
             }
 
             $json['results'][] = [
@@ -143,8 +154,10 @@ class NotificationCore
                 'id_customer'         => ((!empty($value['id_customer'])) ? (int) $value['id_customer'] : 0),
                 'id_customer_message' => ((!empty($value['id_customer_message'])) ? (int) $value['id_customer_message'] : 0),
                 'id_customer_thread'  => ((!empty($value['id_customer_thread'])) ? (int) $value['id_customer_thread'] : 0),
+                'id_system_notification'  => ((!empty($value['id_system_notification'])) ? (int) $value['id_system_notification'] : 0),
                 'total_paid'          => ((!empty($value['total_paid'])) ? Tools::displayPrice((float) $value['total_paid'], (int) $value['id_currency'], false) : 0),
                 'customer_name'       => $customerName,
+                'short_desc'          => $notif_short_desc,
                 // x1000 because of moment.js (see: http://momentjs.com/docs/#/parsing/unix-timestamp/)
                 'update_date'         => isset($value['date_upd']) ? (int) strtotime($value['date_upd']) * 1000 : 0,
             ];
